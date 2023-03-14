@@ -1,0 +1,34 @@
+[versions]
+agp = "8.0.0-beta05"
+kotlin_base = "1.8.10"
+kotlin_coroutines = "1.6.4"
+kotlin_serialization = "1.5.0"
+kotlin_datetime = "0.4.0"
+kotlin_collections = "0.3.5"
+compose_other = "1.4.0-rc01"
+compose_activity = "1.6.1"
+compose_compiler = "1.4.3"
+compose_material3 = "1.1.0-alpha08"
+androidx_datastore = "1.0.0"
+
+[libraries]
+agp = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin_base" }
+
+kotlin_coroutinesAndroid = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlin_coroutines" }
+kotlin_serializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlin_serialization" }
+kotlin_dateTime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlin_datetime" }
+kotlin_collections = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlin_collections" }
+kotlin_reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin_base" }
+
+androidX_dataStore = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx_datastore" }
+
+compose_compiler = { module = "androidx.compose.compiler:compiler", version.ref = "compose_compiler" }
+compose_foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose_other" }
+compose_ui = { module = "androidx.compose.ui:ui", version.ref = "compose_other" }
+compose_material = { module = "androidx.compose.material:material", version.ref = "compose_other" }
+compose_material3 = { module = "androidx.compose.material3:material3", version.ref = "compose_material3" }
+compose_animation = { module = "androidx.compose.animation:animation", version.ref = "compose_other" }
+compose_tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose_other" }
+compose_toolingPreview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose_other" }
+compose_activity = { module = "androidx.activity:activity-compose", version.ref = "compose_activity" }
