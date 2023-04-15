@@ -12,8 +12,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,17 +25,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import com.deborah.dress.ui.theme.AppTheme
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
-import okhttp3.MediaType
-import retrofit2.Retrofit
-import retrofit2.create
+import io.mhssn.colorpicker.ColorPicker
+import io.mhssn.colorpicker.ColorPickerType
+import kotlinx.coroutines.delay
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -40,11 +43,13 @@ import kotlin.concurrent.thread
 @SuppressLint("MissingPermission")
 class MainActivity : ComponentActivity() {
 
-    @OptIn(ExperimentalSerializationApi::class)
+    private val udpServer = UdpServer(1234)
+
+    /*@OptIn(ExperimentalSerializationApi::class)
     private val retrofit = Retrofit.Builder()
-        .baseUrl("http://192.168.1.1")
+        .baseUrl("http://192.168.4.1")
         .addConverterFactory(Json.asConverterFactory(MediaType.parse("application/json")!!))
-        .build()
+        .build()*/
 
     /*val recorder by lazy {
         AudioRecord.Builder()
@@ -57,13 +62,31 @@ class MainActivity : ComponentActivity() {
                     .build()
             )
             .build()
-    }*/
-    private val nodeMcu = retrofit.create<NodeMcu>()
+    }
+    private val nodeMcu = retrofit.create<NodeMcu>()*/
 
     @Suppress("DEPRECATION")
-    val recorder = MediaRecorder()
+    private val recorder = MediaRecorder()
 
-    var pitch by mutableStateOf(0)
+    var amplitude by mutableStateOf(0)
+
+    private fun startRecorder() {
+        thread {
+            recorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+            recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+            recorder.setOutputFile(File(this.dataDir, "text.wav"))
+            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC)
+            recorder.prepare()
+            recorder.start()
+
+            while (true) {
+                Thread.sleep(500)
+                val maxAmplitude = recorder.maxAmplitude
+                Log.i("Amplitude", maxAmplitude.toString())
+                amplitude = maxAmplitude
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,7 +97,9 @@ class MainActivity : ComponentActivity() {
             val launcher = rememberLauncherForActivityResult(
                 ActivityResultContracts.RequestPermission()
             ) { isGranted: Boolean ->
-                if (!isGranted) {
+                if (isGranted) {
+                    startRecorder()
+                } else {
                     Toast.makeText(this, "This permission is required!!!", Toast.LENGTH_SHORT)
                         .show()
                     finish()
@@ -93,45 +118,34 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-        thread {
-            recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            recorder.setOutputFile(File(this.dataDir, "text.wav"))
-            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.HE_AAC);
-            recorder.prepare();
-            recorder.start();   // Recording is now started
-
-            while (true) {
-                Thread.sleep(500)
-                val maxAmplitude = recorder.maxAmplitude
-                Log.i("Amplitude", maxAmplitude.toString())
-                pitch = maxAmplitude
-            }
-        }
     }
 
+    @OptIn(ExperimentalComposeUiApi::class)
     @Composable
-    fun Content() = Column {
-        var text by remember { mutableStateOf("Connect") }
+    private fun Content() = Column(
+        modifier = Modifier.padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        var selectedColor by remember { mutableStateOf(Color.White) }
 
-        Text(pitch.toString(), fontSize = 20.sp)
-
-        Button(onClick = {
-            runBlocking {
-                text = if (nodeMcu.connect().isSuccessful) "Connected!" else "Oops"
+        LaunchedEffect(Unit) {
+            while (true) {
+                udpServer.send(selectedColor, amplitude)
+                delay(200)
             }
-            recorder.stop();
-            recorder.reset();   // You can reuse the object by going back to setAudioSource() step
-            recorder.release(); // Now the object cannot be reused
-        }) {
-            Text(text = text)
         }
-    }
 
-    companion object {
-        const val BUFFER_SIZE = 4096
-        const val FREQ = 22050
+        Text(amplitude.toString(), fontSize = 20.sp)
+
+        Spacer(Modifier.height(32.dp))
+
+        ColorPicker(
+            modifier = Modifier.fillMaxSize(),
+            type = ColorPickerType.Circle(
+                showAlphaBar = false
+            ),
+            onPickedColor = { selectedColor = it }
+        )
     }
 }
 
