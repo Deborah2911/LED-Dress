@@ -9,8 +9,8 @@ android {
 
     defaultConfig {
         applicationId "com.deborah.dress"
-        minSdk 29
-        targetSdk 33
+        minSdk 30
+        targetSdk 30
         versionCode 1
         versionName "1.0"
     }
@@ -63,7 +63,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.0")
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation files('libs/TarsosDSP-Android-2.4.jar')
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0")
+//    implementation files('libs/TarsosDSP-Android-2.4.jar')
 
 //    debugImplementation 'androidx.compose.ui:ui-test-manifest'
 }

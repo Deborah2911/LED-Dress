@@ -6,5 +6,5 @@ import retrofit2.http.GET
 interface NodeMcu {
 
     @GET("/")
-    fun connect(): Response<Void>
+    suspend fun connect(): Response<String>
 }
