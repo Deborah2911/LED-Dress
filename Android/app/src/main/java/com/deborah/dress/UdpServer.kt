@@ -17,13 +17,16 @@ class UdpServer(serverPort: Int) {
     private val socket = DatagramSocket(serverPort)
     private val address: InetAddress =
         InetAddress.getByAddress(byteArrayOf(192.toByte(), 168.toByte(), 4, 1))
+//        InetAddress.getByAddress(byteArrayOf(192.toByte(), 168.toByte(), 0, 115))
 
-    suspend fun send(color: Color, amplitude: Int) = withContext(Dispatchers.IO) {
-        val buffer = ByteBuffer.allocate(Int.SIZE_BYTES * 2)
-        buffer.putInt(amplitude)
-        buffer.put(color.red().toByte())
-        buffer.put(color.green().toByte())
-        buffer.put(color.blue().toByte())
+    fun send(color: Color, amplitude: Int) {
+        val buffer = ByteBuffer.allocate(Int.SIZE_BYTES * 2).apply {
+            putInt(amplitude)
+            put(color.red().toByte())
+            put(color.green().toByte())
+            put(color.blue().toByte())
+        }
+
         val bytes = buffer.array()
         Log.d("Sending Packet", bytes.size.toString())
 
