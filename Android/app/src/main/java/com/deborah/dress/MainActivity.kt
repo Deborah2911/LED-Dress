@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.MediaRecorder
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -38,8 +37,6 @@ import androidx.core.view.WindowCompat
 import com.deborah.dress.ui.theme.AppTheme
 import io.mhssn.colorpicker.ColorPicker
 import io.mhssn.colorpicker.ColorPickerType
-import java.io.File
-import kotlin.concurrent.thread
 
 
 @SuppressLint("MissingPermission")
@@ -64,8 +61,6 @@ class MainActivity : ComponentActivity() {
     // Compose
     private var selectedColor by mutableStateOf(Color.White)
     private var amplitude by mutableStateOf(0)
-
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -117,7 +112,12 @@ class MainActivity : ComponentActivity() {
         statusReceiver = object : BroadcastReceiver() {
             override fun onReceive(p0: Context?, intent: Intent) {
                 Log.d("Hello", "Received Status")
-                selectedColor = Color(intent.getIntExtra(NotificationService.COLOR_KEY, Color.Black.toArgb()))
+                // Color is optional
+                val newColor = intent.getIntExtra(NotificationService.COLOR_KEY, -1)
+                if (newColor != -1) {
+                    selectedColor = Color(newColor)
+                }
+
                 amplitude = intent.getIntExtra(NotificationService.AMPLITUDE_KEY, 0)
             }
         }
@@ -128,7 +128,6 @@ class MainActivity : ComponentActivity() {
         super.onPause()
 
         unregisterReceiver(statusReceiver)
-//        unregisterReceiver(timeReceiver)
 
         // Moving the service to foreground when the app is in background / not visible
         moveToForeground()
@@ -141,8 +140,9 @@ class MainActivity : ComponentActivity() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-//        LaunchedEffect(selectedColor, amplitude) {
-//        }
+        LaunchedEffect(selectedColor) {
+            sendState()
+        }
 
         Text(amplitude.toString(), fontSize = 20.sp)
 
@@ -157,10 +157,23 @@ class MainActivity : ComponentActivity() {
         )
     }
 
+    private fun sendState() {
+        val stopwatchService = Intent(this, NotificationService::class.java)
+        stopwatchService.putExtra(
+            NotificationService.SERVICE_ACTION,
+            NotificationService.SET_STATUS
+        )
+        stopwatchService.putExtra(
+            NotificationService.COLOR_KEY,
+            selectedColor.toArgb()
+        )
+        startService(stopwatchService)
+    }
+
     private fun getNotificationStatus() {
         val stopwatchService = Intent(this, NotificationService::class.java)
         stopwatchService.putExtra(
-            NotificationService.NOTIFICATION_ACTION,
+            NotificationService.SERVICE_ACTION,
             NotificationService.GET_STATUS
         )
         startService(stopwatchService)
@@ -169,7 +182,7 @@ class MainActivity : ComponentActivity() {
     private fun moveToForeground() {
         val stopwatchService = Intent(this, NotificationService::class.java)
         stopwatchService.putExtra(
-            NotificationService.NOTIFICATION_ACTION,
+            NotificationService.SERVICE_ACTION,
             NotificationService.MOVE_TO_FOREGROUND
         )
         startService(stopwatchService)
@@ -178,7 +191,7 @@ class MainActivity : ComponentActivity() {
     private fun moveToBackground() {
         val stopwatchService = Intent(this, NotificationService::class.java)
         stopwatchService.putExtra(
-            NotificationService.NOTIFICATION_ACTION,
+            NotificationService.SERVICE_ACTION,
             NotificationService.MOVE_TO_BACKGROUND
         )
         startService(stopwatchService)
