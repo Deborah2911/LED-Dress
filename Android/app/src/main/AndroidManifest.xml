@@ -30,7 +30,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".NotificationService" android:enabled="true" />
+        <service android:name=".notification.NotificationService" android:enabled="true" />
     </application>
 
 </manifest>

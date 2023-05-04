@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-parcelize'
 }
 
 android {
@@ -46,8 +47,6 @@ dependencies {
     // Kotlin
     debugImplementation(libs.kotlin.reflect)
     implementation(libs.kotlin.coroutinesAndroid)
-//    implementation(libs.kotlin.serializationJson)
-//    implementation(libs.kotlin.dateTime)
 
     // Compose
     implementation(libs.compose.compiler)
@@ -62,10 +61,4 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
 
     implementation("io.mhssn:colorpicker:1.0.0")
-
-//    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-//    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0")
-//    implementation files('libs/TarsosDSP-Android-2.4.jar')
-
-//    debugImplementation 'androidx.compose.ui:ui-test-manifest'
 }

@@ -1,4 +1,4 @@
-package com.deborah.dress
+package com.deborah.dress.notification
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -8,6 +8,8 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
+import com.deborah.dress.MainActivity
+import com.deborah.dress.R
 
 class NotificationHelper(private val ctx: Context) {
 

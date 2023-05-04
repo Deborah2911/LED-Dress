@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
+import com.deborah.dress.notification.NotificationService
 import com.deborah.dress.ui.theme.AppTheme
 import io.mhssn.colorpicker.ColorPicker
 import io.mhssn.colorpicker.ColorPickerType
@@ -61,6 +62,7 @@ class MainActivity : ComponentActivity() {
     // Compose
     private var selectedColor by mutableStateOf(Color.White)
     private var amplitude by mutableStateOf(0)
+    private var algorithm by mutableStateOf(LedAlgorithm.OFF)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,6 +118,11 @@ class MainActivity : ComponentActivity() {
                 val newColor = intent.getIntExtra(NotificationService.COLOR_KEY, -1)
                 if (newColor != -1) {
                     selectedColor = Color(newColor)
+                }
+
+                val newAlgorithm = intent.getByteExtra(NotificationService.ALGORITHM_KEY, 255.toByte())
+                if (newAlgorithm != 255.toByte()) {
+                    algorithm = LedAlgorithm.fromByte(newAlgorithm)
                 }
 
                 amplitude = intent.getIntExtra(NotificationService.AMPLITUDE_KEY, 0)

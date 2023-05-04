@@ -1,4 +1,4 @@
-package com.deborah.dress
+package com.deborah.dress.notification
 
 import android.app.Service
 import android.content.Intent
@@ -6,6 +6,9 @@ import android.os.IBinder
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import com.deborah.dress.LedAlgorithm
+import com.deborah.dress.Recorder
+import com.deborah.dress.UdpServer
 import java.util.Timer
 import java.util.TimerTask
 
@@ -21,9 +24,9 @@ class NotificationService : Service() {
 
     // State
     private var color = Color.Black
-
     @Volatile
     private var amplitude = 0
+    private var ledAlgorithm = LedAlgorithm.OFF
 
     override fun onCreate() {
         super.onCreate()
@@ -32,7 +35,7 @@ class NotificationService : Service() {
 
         recorder.start { maxAmplitude ->
             amplitude = maxAmplitude
-            udpServer.send(color, amplitude)
+            udpServer.send(color, amplitude, ledAlgorithm)
         }
 
         val task = object : TimerTask() {
@@ -90,6 +93,7 @@ class NotificationService : Service() {
 
     private fun receiveState(intent: Intent) {
         color = Color(intent.getIntExtra(COLOR_KEY, 0))
+        ledAlgorithm = LedAlgorithm.fromByte(intent.getByteExtra(ALGORITHM_KEY, 0))
     }
 
     // endregion Receive from Activity
@@ -101,6 +105,7 @@ class NotificationService : Service() {
             action = STATUS_ACTION
             putExtra(COLOR_KEY, color.toArgb())
             putExtra(AMPLITUDE_KEY, amplitude)
+            putExtra(ALGORITHM_KEY, ledAlgorithm.toByte())
         }
 
         sendBroadcast(statusIntent)
@@ -133,5 +138,6 @@ class NotificationService : Service() {
         const val SERVICE_ACTION = "service_action"
         const val COLOR_KEY = "color"
         const val AMPLITUDE_KEY = "amplitude"
+        const val ALGORITHM_KEY = "algorithm"
     }
 }
