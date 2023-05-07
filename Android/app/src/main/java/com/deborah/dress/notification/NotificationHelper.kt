@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
+import com.deborah.dress.LedAlgorithm
 import com.deborah.dress.MainActivity
 import com.deborah.dress.R
 
@@ -27,7 +28,7 @@ class NotificationHelper(private val ctx: Context) {
         manager.createNotificationChannel(notificationChannel)
     }
 
-    fun buildNotification(color: Int, amplitude: Int): Notification {
+    fun buildNotification(color: Int, algorithm: LedAlgorithm): Notification {
         val title = "Listening to microphone"
 
         val intent = Intent(ctx, MainActivity::class.java)
@@ -50,7 +51,7 @@ class NotificationHelper(private val ctx: Context) {
         return NotificationCompat.Builder(ctx, CHANNEL_ID)
             .setContentTitle(title)
             .setOngoing(true)
-            .setContentText("Amplitude: $amplitude")
+            .setContentText("Algorithm: $algorithm")
             .setColorized(true)
             .setColor(color)
             .addAction(R.drawable.baseline_stop_circle_24, "Stop", pStopSelf)
@@ -59,13 +60,6 @@ class NotificationHelper(private val ctx: Context) {
             .setContentIntent(pIntent)
             .setAutoCancel(true)
             .build()
-    }
-
-    fun updateNotification(color: Int, amplitude: Int) {
-        manager.notify(
-            1,
-            buildNotification(color, amplitude)
-        )
     }
 
     companion object {

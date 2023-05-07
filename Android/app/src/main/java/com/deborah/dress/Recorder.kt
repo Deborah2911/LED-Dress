@@ -10,14 +10,13 @@ class Recorder(private val ctx: Context) {
 
     @Suppress("DEPRECATION")
     private val recorder = MediaRecorder()
+
     @Volatile
     private var running = false
 
-    private var recorderThread: Thread? = null
-
     fun start(callback: (amplitude: Int) -> Unit) {
         running = true
-        recorderThread = thread {
+        thread {
             recorder.setAudioSource(MediaRecorder.AudioSource.MIC)
             recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
             recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
@@ -32,6 +31,10 @@ class Recorder(private val ctx: Context) {
                 Log.i("Amplitude", maxAmplitude.toString())
                 callback(maxAmplitude)
             }
+
+            recorder.stop()
+            recorder.reset()
+            recorder.release()
         }
     }
 

@@ -40,9 +40,7 @@ class NotificationService : Service() {
 
         val task = object : TimerTask() {
             override fun run() {
-                if (isForeground) {
-                    notificationHelper.updateNotification(color.toArgb(), amplitude)
-                } else {
+                if (!isForeground) {
                     sendAmplitude()
                 }
             }
@@ -51,17 +49,11 @@ class NotificationService : Service() {
         updateTimer.scheduleAtFixedRate(task, 0, 1000)
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        Log.i("NotificationService", "onBind was called")
-        return null
-    }
+    override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val action = intent?.getStringExtra(SERVICE_ACTION)
 
-        Log.d("Stopwatch", "onStartCommand Action: $action")
-
-        when (action) {
+        when (intent?.getStringExtra(SERVICE_ACTION)) {
             STOP -> stopSelf()
             GET_STATUS -> sendStatus()
             SET_STATUS -> receiveState(intent)
@@ -69,8 +61,9 @@ class NotificationService : Service() {
             MOVE_TO_BACKGROUND -> moveToBackground()
             else -> {
                 // Stop all background threads, otherwise the service won't stop properly
-                recorder.stop()
                 updateTimer.cancel()
+                recorder.stop()
+                udpServer.close()
                 stopSelf()
                 return START_NOT_STICKY
             }
@@ -82,7 +75,7 @@ class NotificationService : Service() {
     // region Receive from Activity
 
     private fun moveToForeground() {
-        startForeground(1, notificationHelper.buildNotification(color.toArgb(), amplitude))
+        startForeground(1, notificationHelper.buildNotification(color.toArgb(), ledAlgorithm))
         isForeground = true
     }
 
