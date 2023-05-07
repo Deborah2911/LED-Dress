@@ -4,7 +4,9 @@ enum class LedAlgorithm {
     OFF,
     AMPLITUDE,
     SOLID_COLOR,
-    COLOR_BREATH;
+    COLOR_BREATH,
+    GRADIENT,
+    WAVE;
 
     fun toByte(): Byte {
         return when (this) {
@@ -12,6 +14,8 @@ enum class LedAlgorithm {
             AMPLITUDE -> 1
             SOLID_COLOR -> 2
             COLOR_BREATH -> 3
+            GRADIENT -> 4
+            WAVE -> 5
         }
     }
 
@@ -21,6 +25,8 @@ enum class LedAlgorithm {
             AMPLITUDE -> "Amplitude"
             SOLID_COLOR -> "Solid Color"
             COLOR_BREATH -> "Color Breath"
+            GRADIENT -> "Gradient"
+            WAVE -> "Wave"
         }
     }
 
@@ -31,6 +37,8 @@ enum class LedAlgorithm {
                 1.toByte() -> AMPLITUDE
                 2.toByte() -> SOLID_COLOR
                 3.toByte() -> COLOR_BREATH
+                4.toByte() -> GRADIENT
+                5.toByte() -> WAVE
                 else -> throw IllegalArgumentException("No such algorithm")
             }
         }

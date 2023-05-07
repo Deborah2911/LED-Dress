@@ -5,15 +5,19 @@
 
 #define NUM_LEDS 300
 #define LED_PIN 2
+#define LED_TYPE NEOPIXEL
 
 CRGB led[NUM_LEDS];
+//CRGBArray<NUM_LEDS> leds_gradient;
 
 AsyncUDP udp;
 
 enum class LedAlgorithm : uint8_t {
   OFF = 0,
   AMPLITUDE = 1,
-  COLOR_BREATH = 2
+  SOLID_COLOR = 2,
+  COLOR_BREATH = 3,
+  GRADIENT = 4
 };
 
 struct PacketData {
@@ -51,28 +55,44 @@ void setup() {
   if (udp.listen(1234)) {
     Serial.print("UDP Listening on IP: ");
     Serial.println(WiFi.localIP());
-    udp.onPacket([](AsyncUDPPacket& packet) {
+    udp.onPacket([](AsyncUDPPacket &packet) {
       // Parse and convert the received bytes:
       memcpy(&data, packet.data(), packet.length());
       data.amplitude = swap_endian(data.amplitude);
 
-      Serial.printf("A: %u R: %u G: %u B: %u\n", data.amplitude, data.red, data.green, data.blue);
+      Serial.printf("A: %u R: %u G: %u B: %u Alg: %u\n", data.amplitude, data.red, data.green, data.blue, data.algorithm);
       packet.printf("Got %u bytes of data", packet.length());
-
-      const float amplitude_percetage = float(data.amplitude) / SHRT_MAX;
-      const int num_leds = NUM_LEDS * amplitude_percetage;
-
-      for (int i = 0; i < num_leds; i++) {
-        led[i] = CRGB(data.red, data.green, data.blue);
-      }
-      for (int i = num_leds; i < NUM_LEDS; i++) {
-        led[i] = CRGB();
-      }
-      FastLED.show();
     });
   }
 }
 
 void loop() {
+  PacketData data_cpy = data;
+  const float amplitude_percetage = float(data_cpy.amplitude) / SHRT_MAX;
+  const int num_leds = NUM_LEDS * amplitude_percetage;
+
+  if (data_cpy.algorithm == LedAlgorithm::OFF) {
+    for (int i = 0; i < NUM_LEDS; i++)
+      led[i] = CRGB();
+    FastLED.show();
+  } else if (data_cpy.algorithm == LedAlgorithm::AMPLITUDE) {
+    for (int i = 0; i < num_leds; i++) {
+      led[i] = CRGB(data_cpy.red, data_cpy.green, data_cpy.blue);
+    }
+    for (int i = num_leds; i < NUM_LEDS; i++) {
+      led[i] = CRGB();
+    }
+    FastLED.show();
+  } else if (data_cpy.algorithm == LedAlgorithm::SOLID_COLOR) {
+    for (int i = 0; i < NUM_LEDS; i++)
+      led[i] = CRGB(data_cpy.red, data_cpy.green, data_cpy.blue);
+    FastLED.show();
+  } else if (data_cpy.algorithm == LedAlgorithm::GRADIENT) {
+      static uint8_t hue = 0; 
+      for (int i = 0; i < NUM_LEDS; i++)
+        led[i]=CHSV(hue++, 255, 255);  
+      FastLED.delay(70);
+  }
+
   delay(100);
 }
