@@ -4,11 +4,9 @@
 #include <climits>
 
 #define NUM_LEDS 300
-#define LED_PIN 2
-#define LED_TYPE NEOPIXEL
+#define LED_PIN 13
 
 CRGB led[NUM_LEDS];
-//CRGBArray<NUM_LEDS> leds_gradient;
 
 AsyncUDP udp;
 
@@ -17,7 +15,10 @@ enum class LedAlgorithm : uint8_t {
   AMPLITUDE = 1,
   SOLID_COLOR = 2,
   COLOR_BREATH = 3,
-  GRADIENT = 4
+  GRADIENT = 4,
+  WAVE = 5,
+  DOUBLE_WAVE = 6,
+  SPARKLE = 7
 };
 
 struct PacketData {
@@ -66,10 +67,14 @@ void setup() {
   }
 }
 
+static uint8_t bri = 255;
+
 void loop() {
   PacketData data_cpy = data;
   const float amplitude_percetage = float(data_cpy.amplitude) / SHRT_MAX;
   const int num_leds = NUM_LEDS * amplitude_percetage;
+
+  const CRGB current_color(data_cpy.red, data_cpy.green, data_cpy.blue);
 
   if (data_cpy.algorithm == LedAlgorithm::OFF) {
     for (int i = 0; i < NUM_LEDS; i++)
@@ -77,7 +82,7 @@ void loop() {
     FastLED.show();
   } else if (data_cpy.algorithm == LedAlgorithm::AMPLITUDE) {
     for (int i = 0; i < num_leds; i++) {
-      led[i] = CRGB(data_cpy.red, data_cpy.green, data_cpy.blue);
+      led[i] = current_color;
     }
     for (int i = num_leds; i < NUM_LEDS; i++) {
       led[i] = CRGB();
@@ -85,14 +90,71 @@ void loop() {
     FastLED.show();
   } else if (data_cpy.algorithm == LedAlgorithm::SOLID_COLOR) {
     for (int i = 0; i < NUM_LEDS; i++)
-      led[i] = CRGB(data_cpy.red, data_cpy.green, data_cpy.blue);
+      led[i] = current_color;
+    FastLED.show();
+  } else if (data_cpy.algorithm == LedAlgorithm::COLOR_BREATH) {
+    static float t = 0.0f;
+    static bool going_up = true;
+
+    t += 0.02 * (-1.0f * going_up);
+
+    if (t >= 1.0f) {
+      going_up = false;
+      t = 0.0f;
+    } else if (t <= 0.0f) {
+      going_up = true;
+      t = 1.0f;
+    }
+
+    CRGB cb(
+      static_cast<uint8_t>(current_color.r * t),
+      static_cast<uint8_t>(current_color.g * t),
+      static_cast<uint8_t>(current_color.b * t));
+
+    for (int i = 0; i < NUM_LEDS; i++)
+      led[i] = cb;
     FastLED.show();
   } else if (data_cpy.algorithm == LedAlgorithm::GRADIENT) {
-      static uint8_t hue = 0; 
-      for (int i = 0; i < NUM_LEDS; i++)
-        led[i]=CHSV(hue++, 255, 255);  
-      FastLED.delay(70);
+    static uint8_t hue = 0;
+    for (int i = 0; i < NUM_LEDS; i++)
+      led[i] = CHSV(hue++, 255, 255);
+    FastLED.delay(75);
+  } else if (data_cpy.algorithm == LedAlgorithm::WAVE) {
+    int ct = 0;
+    for (int i = 0; i < NUM_LEDS; i++) {
+      if (i > 120) {
+        led[ct++] = CRGB();
+      }
+      led[i] = current_color;
+      FastLED.show();
+      delay(5);
+    }
+    for (int i = ct; i < NUM_LEDS; i++) {
+      led[i] = CRGB();
+      FastLED.show();
+      delay(5);
+    }
+  } else if (data_cpy.algorithm == LedAlgorithm::DOUBLE_WAVE) {
+    for (int i = 0; i <= NUM_LEDS / 2; i++) {
+      led[i] = current_color;
+      led[NUM_LEDS - i] = current_color;
+      delay(7);
+      FastLED.show();
+    }
+    delay(5);
+    for (int i = 150; i < NUM_LEDS; i++) {
+      led[i] = CRGB();
+      led[NUM_LEDS - i] = CRGB();
+      delay(7);
+      FastLED.show();
+    }
+  } else if (data_cpy.algorithm == LedAlgorithm::SPARKLE) {
+    uint8_t num = random8(30);
+    for (int i = num; i < NUM_LEDS; i += 30)
+      led[i] = current_color;
+    FastLED.show();
+    delay(8);
+    FastLED.clear();
   }
-
-  delay(100);
+  delay(20);
 }

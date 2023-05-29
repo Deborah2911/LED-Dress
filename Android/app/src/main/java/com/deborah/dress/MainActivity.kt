@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -43,26 +42,9 @@ import com.deborah.dress.notification.NotificationService
 import com.deborah.dress.ui.theme.AppTheme
 import io.mhssn.colorpicker.ColorPicker
 import io.mhssn.colorpicker.ColorPickerType
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
-
 
 @SuppressLint("MissingPermission")
 class MainActivity : ComponentActivity() {
-
-
-    /*val recorder by lazy {
-        AudioRecord.Builder()
-            .setAudioSource(MediaRecorder.AudioSource.MIC)
-            .setAudioFormat(
-                AudioFormat.Builder()
-                    .setEncoding(AudioFormat.ENCODING_PCM_8BIT)
-                    .setSampleRate(44100)
-                    .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
-                    .build()
-            )
-            .build()
-    }*/
 
     private lateinit var statusReceiver: BroadcastReceiver
 
@@ -125,7 +107,7 @@ class MainActivity : ComponentActivity() {
                 if (newColor != -1) {
                     selectedColor = Color(newColor)
                 }
-
+                // Algorithm is optional
                 val newAlgorithm =
                     intent.getByteExtra(NotificationService.ALGORITHM_KEY, 255.toByte())
                 if (newAlgorithm != 255.toByte()) {

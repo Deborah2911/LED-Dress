@@ -8,11 +8,11 @@ import kotlin.concurrent.thread
 
 class Recorder(private val ctx: Context) {
 
-    @Suppress("DEPRECATION")
-    private val recorder = MediaRecorder()
-
     @Volatile
     private var running = false
+
+    @Suppress("DEPRECATION")
+    private val recorder = MediaRecorder()
 
     fun start(callback: (amplitude: Int) -> Unit) {
         running = true

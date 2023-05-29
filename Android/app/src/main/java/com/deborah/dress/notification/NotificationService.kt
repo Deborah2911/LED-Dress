@@ -3,20 +3,16 @@ package com.deborah.dress.notification
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.deborah.dress.LedAlgorithm
 import com.deborah.dress.Recorder
 import com.deborah.dress.UdpServer
-import java.util.Timer
-import java.util.TimerTask
 
 
 class NotificationService : Service() {
 
     private val notificationHelper by lazy { NotificationHelper(this) }
-    private val updateTimer = Timer()
     private val udpServer = UdpServer(1234)
     private val recorder by lazy { Recorder(this) }
 
@@ -36,17 +32,10 @@ class NotificationService : Service() {
         recorder.start { maxAmplitude ->
             amplitude = maxAmplitude
             udpServer.send(color, amplitude, ledAlgorithm)
-        }
-
-        val task = object : TimerTask() {
-            override fun run() {
-                if (!isForeground) {
-                    sendAmplitude()
-                }
+            if (!isForeground) {
+                sendAmplitude()
             }
         }
-
-        updateTimer.scheduleAtFixedRate(task, 0, 1000)
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -61,7 +50,6 @@ class NotificationService : Service() {
             MOVE_TO_BACKGROUND -> moveToBackground()
             else -> {
                 // Stop all background threads, otherwise the service won't stop properly
-                updateTimer.cancel()
                 recorder.stop()
                 udpServer.close()
                 stopSelf()
