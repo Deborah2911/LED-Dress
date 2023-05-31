@@ -67,8 +67,6 @@ void setup() {
   }
 }
 
-static uint8_t bri = 255;
-
 void loop() {
   PacketData data_cpy = data;
   const float amplitude_percetage = float(data_cpy.amplitude) / SHRT_MAX;
@@ -80,6 +78,7 @@ void loop() {
     for (int i = 0; i < NUM_LEDS; i++)
       led[i] = CRGB();
     FastLED.show();
+    delay(800);
   } else if (data_cpy.algorithm == LedAlgorithm::AMPLITUDE) {
     for (int i = 0; i < num_leds; i++) {
       led[i] = current_color;
@@ -96,17 +95,17 @@ void loop() {
     static float t = 0.0f;
     static bool going_up = true;
 
-    t += 0.02 * (-1.0f * going_up);
+    t += 0.02 * (going_up ? 1.0f : -1.0f);
 
     if (t >= 1.0f) {
       going_up = false;
-      t = 0.0f;
+      t = 1.0f;
     } else if (t <= 0.0f) {
       going_up = true;
-      t = 1.0f;
+      t = 0.0f;
     }
 
-    CRGB cb(
+    const CRGB cb(
       static_cast<uint8_t>(current_color.r * t),
       static_cast<uint8_t>(current_color.g * t),
       static_cast<uint8_t>(current_color.b * t));
@@ -153,7 +152,7 @@ void loop() {
     for (int i = num; i < NUM_LEDS; i += 30)
       led[i] = current_color;
     FastLED.show();
-    delay(8);
+    delay(7);
     FastLED.clear();
   }
   delay(20);
